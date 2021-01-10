@@ -23,6 +23,11 @@ body {
   color: #3b3b3b !important;
 }
 
+footer{
+  min-height: 10em;
+  background-color: #302742;
+}
+
 a {
   text-decoration: none;
   color: white;
@@ -43,6 +48,9 @@ a:hover {
 
 .shad {
   box-shadow: 1px 2px 5px 2px #888888;
+}
+.mConverter{
+  min-height: 12em;
 }
 
 .jpeg-text {
@@ -81,4 +89,53 @@ a:hover {
 
 .mbody {
   color: #5a5a5a !important;
+}
+
+
+.lbody{
+  background-color: #decaff !important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.lds-dual-ring {
+  display: inline-block;
+  width: 3em;
+  height: 3em;
+}
+.lds-dual-ring:after {
+  content: " ";
+  display: block;
+  width: 2em;
+  height: 2em;
+  margin: 8px;
+  border-radius: 50%;
+  border: 6px solid #5351e6;
+  border-color: #5351e6 transparent #5351e6 transparent;
+  animation: lds-dual-ring 1.2s linear infinite;
+}
+@keyframes lds-dual-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }

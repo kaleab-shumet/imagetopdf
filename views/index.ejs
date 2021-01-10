@@ -5,11 +5,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/base/jquery-ui.css"
-    type="text/css" />
-  <link rel="stylesheet" href="css/jquery.ui.plupload.css" type="text/css" />
-
-
   <link rel='stylesheet' href="/css/bootstrap.min.css">
   <link rel='stylesheet' href='/css/style.css' />
 
@@ -69,15 +64,44 @@
               </ol>
             </div>
 
-            <form id="form" method="post" enctype="multipart/form-data">
-              <div id="uploader">
-                <p>Your browser doesn't have Flash, Silverlight or HTML5 support.</p>
+            <div class="row">
+              <div class="col-sm-12 col-md-2"></div>
+              <div class="col-sm-12 col-md-8 border d-flex flex-column p-2 mConverter">
+
+                <div class="border p-2 d-flex align-items-center">
+                  <button id="btn-image-select" class="btn btn-primary">Add Files</button>
+                  <button id="btn-convert" class="btn btn-primary">Convert</button>
+                  <div id="loading-bar" style="display: none;" class="lds-dual-ring"></div>
+                </div>
+
+                <form id="image-form" method="post" class="py-2" enctype="multipart/form-data">
+                  <input type="file" style="display: none;" id="image-selector" multiple />
+
+                  <div id="image-preview-container" class="d-flex flex-column">
+
+                    <!-- 
+                    <div class="d-flex border align-items-center d-flex my-1 p-2">
+                      <img src="https://picsum.photos/200" style="width: 4em; height: 4em;">
+                      <div class="p-2 d-flex flex-column">
+                        <span style="font-weight: 500;">This is File name</span>
+                        <small>Size: 100KB</small>
+                      </div>
+                      <img class="ml-auto mr-2" style="width: 1em; height: 1em;" src="/img/close.png">
+                    </div>  -->
+
+
+                  </div>
               </div>
-              <br />
+              <div class="col-sm-12 col-md-2"></div>
+            </div>
             </form>
 
           </div>
         </main>
+
+        <footer>
+          sdfsdfdsfsdfdsfdsfsd
+        </footer>
 
       </div>
 
@@ -101,16 +125,10 @@
 
 
   <script src="js/jquery-3.5.1.min.js"></script>
-  <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>
-
-
-  <script type="text/javascript" src="/js/plupload.full.min.js"></script>
-  <script type="text/javascript" src="/js/jquery.ui.plupload.js"></script>
-  <script src="/js/main.js"></script>
-
-  <!-- 
   <script src="/js/bootstrap.min.js"></script>
-  <script src="/js/main.js"></script> -->
+  <script src="/js/Sortable.min.js"></script>
+  <script src="/js/jquery-sortable.js"></script>
+  <script src="/js/main.js"></script>
 
 </body>
 

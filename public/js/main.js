@@ -1,63 +1,95 @@
-$(document).ready(function () {
-	$("#uploader").plupload({
-		// General settings
-		runtimes: 'html5,flash,silverlight,html4',
-		url: '../upload',
+$('#image-preview-container').sortable({
+	onChoose: function (/**Event*/evt) {
+		$(evt.item).addClass('lbody')
+	},
+	onEnd: function (evt){
+		$(evt.item).removeClass('lbody')
+	}
+});
 
-		// User can upload no more then 20 files in one go (sets multiple_queues to false)
-		max_file_count: 20,
+$('#image-preview-container').hover(function () {
+		// over
+		$(this).css('cursor', 'ns-resize'); 
+	}, function () {
+		// out
+	}
+);
 
-		chunk_size: '1mb',
+$('#btn-image-select').click(function (e) {
+	e.preventDefault();
 
-		file_data_name: 'images',
+	$('#image-selector').click();
+});
+
+const filesArray = []
+$('#image-selector').change(async function (e) {
+	e.preventDefault();
+
+	const files = e.target.files
+
+	for (const file of files) {
+		filesArray.push(file)
+	}
+
+	$('#loading-bar').show()
+	$('#image-preview-container').empty();
+
+	for (const fileA of filesArray) {
+		const imageBuffer = await getBase64(fileA)
+
+		$('#image-preview-container').append(createImagePreview(imageBuffer, fileA.name, (fileA.size / 1024)))
+
+	}
+
+	$('#loading-bar').hide();
+});
+
+$('#image-form').submit(function (e) {
+	e.preventDefault();
+	const formData = new FormData();
+	for (const fileA of filesArray) {
+		formData.append('images', fileA)
+	}
+
+	for (const key of formData.entries()) {
+		console.log(key[0] + ', ' + key[1]);
+	}
 
 
-
-
-		filters: {
-			// Maximum file size
-			max_file_size: '10mb',
-			// Specify what files to browse for
-			mime_types: [
-				{ title: "Image files", extensions: "jpg,png" }
-			]
+	$.ajax({
+		url: '/upload',
+		cache: false,
+		contentType: false,
+		processData: false,
+		data: formData,
+		type: 'POST',
+		success: function (response) {
+			console.log(response);
 		},
-
-		sortable: true,
-		multi_part: true,
-
-		// Enable ability to drag'n'drop files onto the widget (currently only HTML5 supports that)
-		dragdrop: true,
-
-		// Views to activate
-		views: {
-			list: true,
-			thumbs: true, // Show thumbs
-			active: 'thumbs'
-		},
-
-		// Flash settings
-		flash_swf_url: '../../js/Moxie.swf',
-
-		// Silverlight settings
-		silverlight_xap_url: '../../js/Moxie.xap'
-	});
-
-
-	// Handle the case when form was submitted before uploading has finished
-	$('#form').submit(function (e) {
-		// Files in queue upload them first
-		if ($('#uploader').plupload('getFiles').length > 0) {
-
-			// When all files are uploaded submit form
-			$('#uploader').on('complete', function () {
-				$('#form')[0].submit();
-			});
-
-			$('#uploader').plupload('start');
-		} else {
-			alert("You must have at least one file in the queue.");
+		error: function (error) {
+			console.log(error);
 		}
-		return false; // Keep the form from submitting
 	});
 });
+
+
+function createImagePreview(imageBuffer, fileName, fileSize) {
+
+	return `<div class="d-flex border align-items-center d-flex my-1 p-2">
+                      <img src=${imageBuffer} style="width: 4em; height: 4em;">
+                      <div class="p-2 d-flex flex-column">
+                        <span style="font-weight: 500;">${fileName}</span>
+                        <small>Size: ${fileSize}</small>
+                      </div>
+                      <img class="ml-auto mr-2" style="width: 1em; height: 1em;" src="/img/close.png">
+                    </div>`
+}
+
+function getBase64(file) {
+	return new Promise((resolve, reject) => {
+		const reader = new FileReader();
+		reader.readAsDataURL(file);
+		reader.onload = () => resolve(reader.result);
+		reader.onerror = error => reject(error);
+	});
+}
