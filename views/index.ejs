@@ -1,92 +1,117 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Convert JPEG To PDF</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/base/jquery-ui.css"
+    type="text/css" />
+  <link rel="stylesheet" href="css/jquery.ui.plupload.css" type="text/css" />
+
 
   <link rel='stylesheet' href="/css/bootstrap.min.css">
   <link rel='stylesheet' href='/css/style.css' />
 
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/fontawesome.min.css" rel="stylesheet">
-  <link href="css/imageuploadify.min.css" rel="stylesheet">
 
-
+  <title>Convert JPEG to PDF</title>
 </head>
 
 <body>
 
-  <header>
-    <div class="jumbotron">
+  <div class="row">
 
-      <div class="container d-flex flex-column align-items-center">
+    <div class="col-sm-12 col-md-2">
+      <!-- Place for ads -->
 
-        <a class="h2" href="https://convertjpegtopdf.com">ConvertJpegToPDF</a>
-        <div class="d-flex flex-column align-items-center">
-          <h6 class="disc text-center">
-            Convert images to pdf for free. No registration, No watermark !
-          </h6>
-        </div>
-
-      </div>
-    </div>
-  </header>
-
-  <main>
-
-    <div class="row">
-      <div class="col-12">
-      </div>
     </div>
 
-    <div class="my-3">
-      <div class="row">
-        <div class="m-2 col-sm-12 col-md-4">
-          <div class="card">
-            <div class="card-body">
-              <ul>
-                <li>Absolutly Free Service</li>
-                <li>Merge Images To Single PDF</li>
-                <li>No Watermark</li>
-                <li>No Registration</li>
-              </ul>
-              <p class="howtouse">How to Use</p>
-              <ol>
-                <li>Add Files using Upload Button or drag and drop to upload area</li>
-                <li>Simply click Button to convert the images</li>
-              </ol>
+    <div class="col-sm-12 col-md-8">
+
+
+
+      <div class="main">
+
+        <header>
+          <div class="jumbotron jumbotron-fluid">
+            <div class="container d-flex flex-column align-items-center">
+              <a class="h2" href="https://convertjpegtopdf.com">ConvertJpegToPDF</a>
+              <div class="d-flex flex-column align-items-center">
+                <h6 class="disc text-center">
+                  Convert images to pdf for free. No registration, No watermark !
+                </h6>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="m-2 col-sm-12 col-md-7">
+        </header>
 
+        <main>
+          <div class="container m-2 mbody">
+            <h5>
+              Convert JPEG to PDF online - Convert your JPEG image to PDF for free !
+            </h5>
+            <p class="text-muted">Do you have a JPEG and you want to convert it to PDF ? Then You are on the right place
+              !</p>
+            <p>Effectively combine different JPEG pictures into a single PDF and share with others. Completely free, no
+              registration, no watermark</p>
 
-          <button class="btn btn-primary" id="btn-select">Select Files</button>
-          <input style="display: none;" type="file" id="select-file" multiple>
+            <div>
+              <h6 class="font-weight-bold">How to use</h6>
+              <ol>
+                <li>
+                  Click <span class="font-weight-bold">Upload</span> button and Select the images you wish to convert or
+                  just drag your images to
+                  drop area.
+                </li>
+                <li>
+                  Then simply click <span class="font-weight-bold">Convert</span> button and get your PDF file.
+                </li>
+              </ol>
+            </div>
 
-          <div id="image-preview" class="d-flex flex-column py-2">
-              <div class="selected-image d-flex">
-                  <img style="height: 5em; width: 5em;" src="https://picsum.photos/200">
-                  <span class="px-4">Filename</span>
+            <form id="form" method="post" enctype="multipart/form-data">
+              <div id="uploader">
+                <p>Your browser doesn't have Flash, Silverlight or HTML5 support.</p>
               </div>
+              <br />
+            </form>
+
           </div>
-          <button class="btn btn-primary" id="btn-convert">Convert</button>
-          
-        </div>
+        </main>
+
       </div>
+
+
+
+
+
+
     </div>
-  </main>
+
+    <div class="col-sm-12 col-md-2">
+      <!-- Place for ads -->
+    </div>
+
+    <div class="col-sm-12 col-md-3">
+
+    </div>
 
 
-
-
+  </div>
 
 
   <script src="js/jquery-3.5.1.min.js"></script>
-  <script src="/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>
+
+
+  <script type="text/javascript" src="/js/plupload.full.min.js"></script>
+  <script type="text/javascript" src="/js/jquery.ui.plupload.js"></script>
   <script src="/js/main.js"></script>
+
+  <!-- 
+  <script src="/js/bootstrap.min.js"></script>
+  <script src="/js/main.js"></script> -->
+
 </body>
 
 </html>
