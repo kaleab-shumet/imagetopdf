@@ -1,19 +1,11 @@
 $('#image-preview-container').sortable({
-	onChoose: function (/**Event*/evt) {
-		$(evt.item).addClass('lbody')
-	},
-	onEnd: function (evt){
-		$(evt.item).removeClass('lbody')
-	}
+	animation: 150,
+	ghostClass: 'lbody',
+	handle: '.handle'
 });
 
-$('#image-preview-container').hover(function () {
-		// over
-		$(this).css('cursor', 'ns-resize'); 
-	}, function () {
-		// out
-	}
-);
+disableDownload();
+
 
 $('#btn-image-select').click(function (e) {
 	e.preventDefault();
@@ -25,64 +17,126 @@ const filesArray = []
 $('#image-selector').change(async function (e) {
 	e.preventDefault();
 
+	hideError()
+	showStatus("Loading")
+	console.log("On chage");
+
+	//$('#image-preview-container').empty();
+
+
 	const files = e.target.files
 
 	for (const file of files) {
-		filesArray.push(file)
+
+		if (validateFileSize(file)) {
+			showLocalError("Error: Please remove a file which is greater than 10MB")
+		}
+
+		const imageBuffer = await getBase64(file)
+
+		$('#image-preview-container').append(createImagePreview(imageBuffer, file.name, humanFileSize(file.size)))
+		$('.handle').hover(function () {
+			// over
+			$(this).css('cursor', 'pointer');
+
+		}, function () {
+			// out
+		}
+		);
 	}
-
-	$('#loading-bar').show()
-	$('#image-preview-container').empty();
-
-	for (const fileA of filesArray) {
-		const imageBuffer = await getBase64(fileA)
-
-		$('#image-preview-container').append(createImagePreview(imageBuffer, fileA.name, (fileA.size / 1024)))
-
-	}
-
-	$('#loading-bar').hide();
+	hideStatus();
+	$('#image-selector').val('');
 });
 
+
+$('#btn-convert').click(function (e) {
+	e.preventDefault();
+	hideError()
+	$('#image-form').submit()
+});
 $('#image-form').submit(function (e) {
 	e.preventDefault();
-	const formData = new FormData();
-	for (const fileA of filesArray) {
-		formData.append('images', fileA)
-	}
+	hideError()
+	disableDownload()
+	showStatus('Uploading')
+	const formData = new FormData($('#image-form')[0]);
 
-	for (const key of formData.entries()) {
-		console.log(key[0] + ', ' + key[1]);
-	}
+	let validFileSize = true;
+	$('.unique-image').each(function (index, element) {
+		const base64 = $(element).attr('src')
+		const blb = base64toBlob(base64)
 
+		validFileSize = validateFileSize(blb)
 
-	$.ajax({
-		url: '/upload',
-		cache: false,
-		contentType: false,
-		processData: false,
-		data: formData,
-		type: 'POST',
-		success: function (response) {
-			console.log(response);
-		},
-		error: function (error) {
-			console.log(error);
-		}
+		formData.append('images', blb)
+
 	});
+
+	if (validFileSize) {
+		$.ajax({
+			url: '/upload',
+			cache: false,
+			contentType: false,
+			processData: false,
+			data: formData,
+			type: 'POST',
+			success: function (response) {
+
+				showStatus('Converting')
+				const intervalId = setInterval(function () {
+
+					const fileUrl = response.wait
+					console.log(fileUrl);
+					checkFile(fileUrl).then((res) => {
+						if (res == 200) {
+							clearInterval(intervalId);
+
+							enableDownload(fileUrl)
+
+							console.log("File is ready /***********/");
+							hideStatus();
+						}
+					}).catch((error) => {
+						console.log(error);
+					})
+
+				}, 3000);
+				//hideStatus()
+			},
+			error: function (error) {
+				console.log(error);
+				showResponseError(error)
+				hideStatus()
+			}
+		});
+	}
+	else{
+		showLocalError("Error: Please remove a file which is greater than 10MB")
+	}
 });
 
-
+function removeImage(id) {
+	$(`#${id}`).remove()
+	hideError()
+}
 function createImagePreview(imageBuffer, fileName, fileSize) {
 
-	return `<div class="d-flex border align-items-center d-flex my-1 p-2">
-                      <img src=${imageBuffer} style="width: 4em; height: 4em;">
-                      <div class="p-2 d-flex flex-column">
-                        <span style="font-weight: 500;">${fileName}</span>
-                        <small>Size: ${fileSize}</small>
-                      </div>
-                      <img class="ml-auto mr-2" style="width: 1em; height: 1em;" src="/img/close.png">
-                    </div>`
+	const randId = makeid(10);
+
+	return `<div id=${randId} class="d-flex border align-items-center d-flex my-1 p-2">
+	<img class="unique-image" src=${imageBuffer} style="width: 4em; height: 4em;">
+	<div class="p-2 d-flex flex-column overflow-hidden">
+	  <span class="mwrap" style="font-weight: 500;">${fileName}</span>
+	  <small class="mwrap">Size: ${fileSize}</small>
+	</div>
+	<div class="d-flex ml-auto">
+	  <img onclick='removeImage("${randId}")' class="mr-2 close-icon"
+		style="width: 1em; height: 1em;" src="/img/close.png">
+	  <img onclick='removeImage("${randId}")' class="mx-2 handle" style="width: 1em; height: 1em;"
+		src="/img/move.png">
+	</div>
+  </div>`
+
 }
 
 function getBase64(file) {
@@ -92,4 +146,122 @@ function getBase64(file) {
 		reader.onload = () => resolve(reader.result);
 		reader.onerror = error => reject(error);
 	});
+}
+
+function base64toBlob(base64) {
+
+	const uritype = base64.split(';')[0].split('/')[1];
+
+	var byteString = atob(base64.split(',')[1]);
+	var ab = new ArrayBuffer(byteString.length);
+	var ia = new Uint8Array(ab);
+
+	for (let i = 0; i < byteString.length; i++) {
+		ia[i] = byteString.charCodeAt(i);
+	}
+
+	const type = `image/${uritype}`
+	return new Blob([ab], { type });
+
+}
+
+function showStatus(msg = '') {
+
+
+	disableDownload();
+	console.log({ msg });
+
+	$('#status-text').html(msg);
+	$('#status-view').show();
+
+}
+
+function hideStatus() {
+	$('#status-view').hide();
+}
+
+function checkFile(fileUrl) {
+
+	return new Promise(function (resolve, reject) {
+		$.ajax({
+			type: 'HEAD',
+			timeout: 2000,
+			url: fileUrl,
+			success: function () {
+				resolve(200)
+			},
+			error: function () {
+				reject(400)
+			}
+		});
+
+	})
+}
+
+function makeid(length) {
+	var result = '';
+	var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+	var charactersLength = characters.length;
+
+	for (let i = 0; i < length; i++) {
+		result += characters.charAt(Math.floor(Math.random() * charactersLength));
+	}
+
+	return result;
+}
+
+function enableDownload(downloadUrl) {
+	$('#btn-download').attr("href", downloadUrl);
+	$('#btn-download').show();
+}
+
+function disableDownload() {
+	$('#btn-download').attr("href", "/");
+	$('#btn-download').hide();
+}
+
+function showResponseError(error) {
+	$('#error-view').text(JSON.parse(error.responseText).error);
+	$('#error-view').show()
+}
+
+function showLocalError(error) {
+	$('#error-view').text(error);
+	$('#error-view').show()
+}
+
+function hideError() {
+	$('#error-view').text('');
+	$('#error-view').hide()
+}
+
+function humanFileSize(bytes, si = false, dp = 1) {
+	const thresh = si ? 1000 : 1024;
+
+	if (Math.abs(bytes) < thresh) {
+		return bytes + ' B';
+	}
+
+	const units = si
+		? ['kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+		: ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
+	let u = -1;
+	const r = 10 ** dp;
+
+	do {
+		bytes /= thresh;
+		++u;
+	} while (Math.round(Math.abs(bytes) * r) / r >= thresh && u < units.length - 1);
+
+
+	return bytes.toFixed(dp) + ' ' + units[u];
+}
+
+function validateFileSize(file) {
+	if (file.size > 10000000) {
+		return false
+	}
+
+	return true
+
 }

@@ -7,6 +7,8 @@ var logger = require('morgan');
 var indexRouter = require('./routes/index');
 var uploadRouter = require('./routes/upload')
 
+const multer= require('multer')
+
 var app = express();
 
 // view engine setup
@@ -30,12 +32,22 @@ app.use(function(req, res, next) {
 // error handler
 app.use(function(err, req, res, next) {
   // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+  // res.locals.message = err.message;
+  // res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+  // // render the error page
+
+  if(err instanceof multer.MulterError){
+    if(err.code === 'LIMIT_FILE_SIZE'){
+      err.message = "Error: Please remove a file which is greater than 10MB"
+    }
+  }
+  
+   res.status(err.status || 500);
+   const error = err.message || "Error Occured";
+   res.json({error});
+
+ 
 });
 
 module.exports = app;

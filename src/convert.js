@@ -4,14 +4,14 @@ const fs = require('fs');
 const sizeOf = require('image-size');
 const path = require('path')
 
-const convertToPdf = async (fileNames) => {
+const convertToPdf = async (fileNames, pathUrl) => {
 
     return new Promise(async (resolve, reject) => {
         try {
             let doc = undefined
             let counter = 0;
-            const pathUrl = '/pdfs'+"/combined-" + makeid(5) + "-"+Date.now() + '.pdf'
             const writeFilePath = path.join(__dirname, '..', '/public', pathUrl)
+            
 
             for (const fileName of fileNames) {
 
