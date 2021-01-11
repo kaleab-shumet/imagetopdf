@@ -27,8 +27,9 @@ $('#image-selector').change(async function (e) {
 	const files = e.target.files
 
 	for (const file of files) {
+		const valid = validateFileSize(file)
 
-		if (validateFileSize(file)) {
+		if (!valid) {
 			showLocalError("Error: Please remove a file which is greater than 10MB")
 		}
 
@@ -83,23 +84,21 @@ $('#image-form').submit(function (e) {
 			success: function (response) {
 
 				showStatus('Converting')
+				const fileUrl = response.wait
+				checkForFile(fileUrl, undefined)
 				const intervalId = setInterval(function () {
-
-					const fileUrl = response.wait
-					console.log(fileUrl);
-					checkFile(fileUrl).then((res) => {
+					checkFile(fileUrl).then(res => {
+						console.log("res is: ", res);
 						if (res == 200) {
+
 							clearInterval(intervalId);
-
 							enableDownload(fileUrl)
-
 							console.log("File is ready /***********/");
 							hideStatus();
 						}
 					}).catch((error) => {
 						console.log(error);
 					})
-
 				}, 3000);
 				//hideStatus()
 			},
@@ -110,7 +109,7 @@ $('#image-form').submit(function (e) {
 			}
 		});
 	}
-	else{
+	else {
 		showLocalError("Error: Please remove a file which is greater than 10MB")
 	}
 });
@@ -183,17 +182,29 @@ function hideStatus() {
 function checkFile(fileUrl) {
 
 	return new Promise(function (resolve, reject) {
-		$.ajax({
-			type: 'HEAD',
-			timeout: 2000,
-			url: fileUrl,
-			success: function () {
-				resolve(200)
-			},
-			error: function () {
-				reject(400)
-			}
-		});
+
+		fetch(fileUrl, { method: 'HEAD' }).then((res) => {
+
+			console.log(res.status)
+			resolve(200)
+
+		}).catch(err => {
+			console.log(err)
+			reject(400)
+		})
+
+
+		/* 
+				$.ajax({
+					type: 'HEAD',
+					url: fileUrl,
+					success: function () {
+						resolve(200)
+					},
+					error: function () {
+						reject(400)
+					}
+				}); */
 
 	})
 }
@@ -264,4 +275,22 @@ function validateFileSize(file) {
 
 	return true
 
+}
+
+function checkForFile(fileUrl, intervalId) {
+	checkFile(fileUrl).then(res => {
+		console.log("res is: ", res);
+		if (res == 200) {
+			if (intervalId) {
+				clearInterval(intervalId);
+			}
+
+			enableDownload(fileUrl)
+
+			console.log("File is ready /***********/");
+			hideStatus();
+		}
+	}).catch((error) => {
+		console.log(error);
+	})
 }
