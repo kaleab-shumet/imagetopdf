@@ -66,7 +66,7 @@ $('#image-form').submit(function (e) {
 
 	hideError()
 	disableDownload()
-	
+
 	const formData = new FormData($('#image-form')[0]);
 	let validFileSize = true;
 	let validFileType = true;
@@ -102,6 +102,21 @@ $('#image-form').submit(function (e) {
 				showStatus('Uploading')
 
 				$.ajax({
+					xhr: function () {
+						var xhr = new window.XMLHttpRequest();
+
+						xhr.upload.addEventListener("progress", function (evt) {
+							if (evt.lengthComputable) {
+								let percentComplete = evt.loaded / evt.total;
+								percentComplete = parseInt(percentComplete * 100);
+								
+								showStatus(`Uploading ${percentComplete} %`)
+
+							}
+						}, false);
+
+						return xhr;
+					},
 					url: '/upload',
 					cache: false,
 					contentType: false,
