@@ -29,6 +29,8 @@ $('#image-selector').change(async function (e) {
 		const validFileSize = validateFileSize(file)
 		const validFileType = validateFileType(file)
 
+		console.log({ validFileType });
+
 		if (!validFileSize) {
 			showLocalError("Error: Please remove a file which is greater than 10MB")
 		}
@@ -81,7 +83,7 @@ $('#image-form').submit(function (e) {
 		}
 
 		if (validFileType) {
-			validFileSize = validateFileSize(blb)
+			validFileType = validateFileSize(blb)
 		}
 
 		if (remotevalue === 'none') {
@@ -343,6 +345,8 @@ const validateFileType = (file) => {
 				return true;
 			}
 		}
+
+		return false;
 	}
 	else
 		return false;
