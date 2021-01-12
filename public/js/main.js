@@ -13,7 +13,6 @@ $('#btn-image-select').click(function (e) {
 	$('#image-selector').click();
 });
 
-const filesArray = []
 $('#image-selector').change(async function (e) {
 	e.preventDefault();
 
@@ -27,10 +26,15 @@ $('#image-selector').change(async function (e) {
 	const files = e.target.files
 
 	for (const file of files) {
-		const valid = validateFileSize(file)
+		const validFileSize = validateFileSize(file)
+		const validFileType = validateFileType(file)
 
-		if (!valid) {
+		if (!validFileSize) {
 			showLocalError("Error: Please remove a file which is greater than 10MB")
+		}
+
+		if (!validFileType) {
+			showLocalError("Please select valid image type")
 		}
 
 		const imageBuffer = await getBase64(file)
@@ -63,51 +67,84 @@ $('#image-form').submit(function (e) {
 	const formData = new FormData($('#image-form')[0]);
 
 	let validFileSize = true;
+	let validFileType = true;
 	$('.unique-image').each(function (index, element) {
 		const base64 = $(element).attr('src')
 		const blb = base64toBlob(base64)
 
-		validFileSize = validateFileSize(blb)
+		const imageid = $(element).attr('id'); //Image id used for sorting for server
+		let remotevalue = $(element).attr('remotevalue'); // Used to prevent reupload
+		if (!remotevalue) remotevalue = 'none'
 
-		formData.append('images', blb)
+		if (validFileSize) {
+			validFileSize = validateFileSize(blb)
+		}
+
+		if (validFileType) {
+			validFileSize = validateFileSize(blb)
+		}
+
+		if (remotevalue === 'none') {
+			formData.append('images', blb)
+		}
+		formData.append('imageids', imageid)
+		formData.append('remotevalues', remotevalue)
 
 	});
 
 	if (validFileSize) {
-		$.ajax({
-			url: '/upload',
-			cache: false,
-			contentType: false,
-			processData: false,
-			data: formData,
-			type: 'POST',
-			success: function (response) {
+		if (validFileType) {
+			$.ajax({
+				url: '/upload',
+				cache: false,
+				contentType: false,
+				processData: false,
+				data: formData,
+				type: 'POST',
+				success: function (response) {
 
-				showStatus('Converting')
-				const fileUrl = response.wait
-				checkForFile(fileUrl, undefined)
-				const intervalId = setInterval(function () {
-					checkFile(fileUrl).then(res => {
-						console.log("res is: ", res);
-						if (res == 200) {
+					showStatus('Converting')
+					const fileUrl = response.wait
+					const idremotevaluepair = response.idremotevaluepair;
 
-							clearInterval(intervalId);
-							enableDownload(fileUrl)
-							console.log("File is ready /***********/");
-							hideStatus();
-						}
-					}).catch((error) => {
-						console.log(error);
-					})
-				}, 3000);
-				//hideStatus()
-			},
-			error: function (error) {
-				console.log(error);
-				showResponseError(error)
-				hideStatus()
-			}
-		});
+					//console.log(idremotevaluepair);
+					for (const idvaluepair of idremotevaluepair) {
+
+						const id = Object.keys(idvaluepair)[0]
+						const remoteValue = idvaluepair[id];
+
+						console.log({ id, remoteValue });
+
+						$(`#${id}`).attr('remotevalue', remoteValue);
+					}
+
+					checkForFile(fileUrl, undefined)
+					const intervalId = setInterval(function () {
+						checkFile(fileUrl).then(res => {
+							console.log("res is: ", res);
+							if (res == 200) {
+
+								clearInterval(intervalId);
+								enableDownload(fileUrl)
+								console.log("File is ready /***********/");
+								hideStatus();
+							}
+						}).catch((error) => {
+							console.log(error);
+						})
+					}, 3000);
+					//hideStatus()
+				},
+				error: function (error) {
+					console.log(error);
+					showResponseError(error)
+					hideStatus()
+				}
+			});
+		}
+		else {
+			showLocalError("Please select valid image type")
+		}
 	}
 	else {
 		showLocalError("Error: Please remove a file which is greater than 10MB")
@@ -122,8 +159,10 @@ function createImagePreview(imageBuffer, fileName, fileSize) {
 
 	const randId = makeid(10);
 
+	const imageid = makeid(10);
+
 	return `<div id=${randId} class="d-flex border align-items-center d-flex my-1 p-2">
-	<img class="unique-image" src=${imageBuffer} style="width: 4em; height: 4em;">
+	<img id=${imageid} class="unique-image" src=${imageBuffer} style="width: 4em; height: 4em;">
 	<div class="p-2 d-flex flex-column overflow-hidden">
 	  <span class="mwrap" style="font-weight: 500;">${fileName}</span>
 	  <small class="mwrap">Size: ${fileSize}</small>
@@ -293,4 +332,22 @@ function checkForFile(fileUrl, intervalId) {
 	}).catch((error) => {
 		console.log(error);
 	})
+}
+
+const validateFileType = (file) => {
+	if (file) {
+		const supportedFilesList = ['jpg', 'jpeg', 'png']
+		const fileType = file.type.toString().toLowerCase()
+		for (const supportedFile of supportedFilesList) {
+			if (fileType.includes(supportedFile)) {
+				return true;
+			}
+		}
+	}
+	else
+		return false;
+}
+function getExtension(filename) {
+	var parts = filename.split('.');
+	return parts[parts.length - 1];
 }

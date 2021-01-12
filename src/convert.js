@@ -16,7 +16,7 @@ const convertToPdf = async (fileNames, pathUrl) => {
             for (const fileName of fileNames) {
 
                 const readFilePath = path.join(__dirname, '..', '/public/images', fileName)
-                console.log({ readFilePath });
+                //console.log({ readFilePath });
                 const size = await sizeOf(readFilePath);
                 const imageSize = [size.width, size.height]
 
