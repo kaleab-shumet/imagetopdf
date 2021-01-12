@@ -63,11 +63,11 @@ $('#btn-convert').click(function (e) {
 });
 $('#image-form').submit(function (e) {
 	e.preventDefault();
+
 	hideError()
 	disableDownload()
-	showStatus('Uploading')
+	
 	const formData = new FormData($('#image-form')[0]);
-
 	let validFileSize = true;
 	let validFileType = true;
 	$('.unique-image').each(function (index, element) {
@@ -94,62 +94,70 @@ $('#image-form').submit(function (e) {
 
 	});
 
-	if (validFileSize) {
-		if (validFileType) {
-			$.ajax({
-				url: '/upload',
-				cache: false,
-				contentType: false,
-				processData: false,
-				data: formData,
-				type: 'POST',
-				success: function (response) {
 
-					showStatus('Converting')
-					const fileUrl = response.wait
-					const idremotevaluepair = response.idremotevaluepair;
+	if ($('.unique-image').length > 0) {
+		if (validFileSize) {
+			if (validFileType) {
 
-					//console.log(idremotevaluepair);
-					for (const idvaluepair of idremotevaluepair) {
+				showStatus('Uploading')
 
-						const id = Object.keys(idvaluepair)[0]
-						const remoteValue = idvaluepair[id];
+				$.ajax({
+					url: '/upload',
+					cache: false,
+					contentType: false,
+					processData: false,
+					data: formData,
+					type: 'POST',
+					success: function (response) {
 
-						console.log({ id, remoteValue });
+						showStatus('Converting')
+						const fileUrl = response.wait
+						const idremotevaluepair = response.idremotevaluepair;
 
-						$(`#${id}`).attr('remotevalue', remoteValue);
+						//console.log(idremotevaluepair);
+						for (const idvaluepair of idremotevaluepair) {
+
+							const id = Object.keys(idvaluepair)[0]
+							const remoteValue = idvaluepair[id];
+
+							console.log({ id, remoteValue });
+
+							$(`#${id}`).attr('remotevalue', remoteValue);
+						}
+
+						checkForFile(fileUrl, undefined)
+						const intervalId = setInterval(function () {
+							checkFile(fileUrl).then(res => {
+								console.log("res is: ", res);
+								if (res == 200) {
+
+									clearInterval(intervalId);
+									enableDownload(fileUrl)
+									console.log("File is ready /***********/");
+									hideStatus();
+								}
+							}).catch((error) => {
+								console.log(error);
+							})
+						}, 3000);
+						//hideStatus()
+					},
+					error: function (error) {
+						console.log(error);
+						showResponseError(error)
+						hideStatus()
 					}
-
-					checkForFile(fileUrl, undefined)
-					const intervalId = setInterval(function () {
-						checkFile(fileUrl).then(res => {
-							console.log("res is: ", res);
-							if (res == 200) {
-
-								clearInterval(intervalId);
-								enableDownload(fileUrl)
-								console.log("File is ready /***********/");
-								hideStatus();
-							}
-						}).catch((error) => {
-							console.log(error);
-						})
-					}, 3000);
-					//hideStatus()
-				},
-				error: function (error) {
-					console.log(error);
-					showResponseError(error)
-					hideStatus()
-				}
-			});
+				});
+			}
+			else {
+				showLocalError("Please select valid image type")
+			}
 		}
 		else {
-			showLocalError("Please select valid image type")
+			showLocalError("Error: Please remove a file which is greater than 10MB")
 		}
-	}
-	else {
-		showLocalError("Error: Please remove a file which is greater than 10MB")
+	} else {
+		showLocalError("Please Select and Image to convert to PDF")
 	}
 });
 
