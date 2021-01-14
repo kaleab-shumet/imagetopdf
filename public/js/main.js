@@ -24,7 +24,11 @@ $('#image-selector').change(async function (e) {
 
 
 	const files = e.target.files
+	await imageSelectorOnChange(files)
+	
+});
 
+async function imageSelectorOnChange(files){
 	for (const file of files) {
 		const validFileSize = validateFileSize(file)
 		const validFileType = validateFileType(file)
@@ -53,7 +57,7 @@ $('#image-selector').change(async function (e) {
 	}
 	hideStatus();
 	$('#image-selector').val('');
-});
+}
 
 
 $('#btn-convert').click(function (e) {
@@ -109,7 +113,7 @@ $('#image-form').submit(function (e) {
 							if (evt.lengthComputable) {
 								let percentComplete = evt.loaded / evt.total;
 								percentComplete = parseInt(percentComplete * 100);
-								
+
 								showStatus(`Uploading ${percentComplete} %`)
 
 							}
@@ -186,17 +190,16 @@ function createImagePreview(imageBuffer, fileName, fileSize) {
 
 	const imageid = makeid(10);
 
-	return `<div id=${randId} class="d-flex border align-items-center d-flex my-1 p-2">
+	return `<div id=${randId} class="d-flex border align-items-center image-list my-1 p-2">
 	<img id=${imageid} class="unique-image" src=${imageBuffer} style="width: 4em; height: 4em;">
 	<div class="p-2 d-flex flex-column overflow-hidden">
 	  <span class="mwrap" style="font-weight: 500;">${fileName}</span>
 	  <small class="mwrap">Size: ${fileSize}</small>
 	</div>
 	<div class="d-flex ml-auto">
-	  <img onclick='removeImage("${randId}")' class="mr-2 close-icon"
-		style="width: 1em; height: 1em;" src="/img/close.png">
-	  <img onclick='removeImage("${randId}")' class="mx-2 handle" style="width: 1em; height: 1em;"
-		src="/img/move.png">
+	  <i onclick='removeImage("${randId}")' class="fas fa-times mr-2"
+		style="width: 1em; height: 1em;"></i>
+	  <i class="fas fa-arrows-alt-v mx-2 handle" style="width: 1em; height: 1em;"></i>
 	</div>
   </div>`
 
@@ -378,3 +381,44 @@ function getExtension(filename) {
 	var parts = filename.split('.');
 	return parts[parts.length - 1];
 }
+
+$("html").on("dragover", function (e) {
+	e.preventDefault();
+	e.stopPropagation();
+	//$("#drag-text").text("Drag here");
+	//$(".drag-n-drop").css("background-color", "#fddfde");
+});
+
+$("html").on("drop", function (e) {e.preventDefault(); e.stopPropagation();});
+
+$('.drag-n-drop').on('dragenter', function (e) {
+	e.stopPropagation();
+	e.preventDefault();
+	$("#drag-text").text("Drop");	
+	$(".drag-n-drop").css("background-color", "#fddfde");
+});
+
+// Drag over
+$('.drag-n-drop').on('dragover', function (e) {
+	e.stopPropagation();
+	e.preventDefault();
+	$("#drag-text").text("Drop");	
+	$(".drag-n-drop").css("background-color", "#fddfde");
+});
+
+// Drop
+$('.drag-n-drop').on('drop', async function (e) {
+	e.stopPropagation();
+	e.preventDefault();
+
+	$("#drag-text").text("Drop your files here");
+	
+	$(".drag-n-drop").css("background-color", "#fff");
+
+	hideError()
+	showStatus("Loading")
+
+	const files = e.originalEvent.dataTransfer.files;
+	
+	await imageSelectorOnChange(files)
+});
