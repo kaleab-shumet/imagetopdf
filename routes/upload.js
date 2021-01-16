@@ -28,10 +28,10 @@ const imageUpload = upload.array('images', 20);
 router.post('/', imageUpload, async function (req, res, next) {
   try {
     const fileNames = req.files.map(file => file.filename)
-    const imageids = req.body.imageids
-    const remotevalues = req.body.remotevalues
+    let imageids = req.body.imageids
+    let remotevalues = req.body.remotevalues
 
-
+    
     if (!imageids) {
       return next(createHttpError.BadRequest("Please include image ids"))
     }
@@ -39,10 +39,19 @@ router.post('/', imageUpload, async function (req, res, next) {
       return next(createHttpError.BadRequest(`Please include remote value, use 'none' as default`))
     }
 
+    //Convert to array if the values are not array
+    if (!Array.isArray(remotevalues)) {
+      remotevalues = stringToArray(remotevalues)
+    }
+    if (!Array.isArray(imageids)) {
+      imageids = stringToArray(imageids)
+    }
+
     if (imageids.length != remotevalues.length) {
       return next(createHttpError.BadRequest('Image ids and remote values should have equal length'))
     }
 
+    
 
     const mainFileNames = []
 
@@ -69,11 +78,11 @@ router.post('/', imageUpload, async function (req, res, next) {
     const fileExistenceResult = await doAllFilesExist(mainFileNames);
     const mDoAllFileExists = fileExistenceResult.filter(r => r === false).length < 1;
 
-    if(!mDoAllFileExists){
+    if (!mDoAllFileExists) {
       return next(createHttpError.BadRequest('Your files does not exists on the server, Refresh and try again'))
     }
 
-      console.log("Do all Files exists", mDoAllFileExists);
+    console.log("Do all Files exists", mDoAllFileExists);
 
     const pathUrl = '/pdfs' + "/convertjpegtopdf-" + makeid(5) + Date.now() + '.pdf'
     convertToPdf(mainFileNames, pathUrl)
@@ -131,6 +140,10 @@ const checkFileExists = async (fileName) => {
   return fs.promises.access(filePath, fs.constants.F_OK)
     .then(() => true)
     .catch(() => false)
+}
+
+const stringToArray = (val) =>{
+  return [val];
 }
 
 module.exports = router;
